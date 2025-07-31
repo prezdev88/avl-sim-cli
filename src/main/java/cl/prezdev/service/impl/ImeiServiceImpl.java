@@ -1,10 +1,12 @@
-package cl.prezdev.service;
+package cl.prezdev.service.impl;
 
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+
+import cl.prezdev.service.ImeiService;
 
 @Service
 public class ImeiServiceImpl implements ImeiService {

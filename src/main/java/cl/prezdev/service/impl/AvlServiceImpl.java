@@ -1,4 +1,4 @@
-package cl.prezdev.service;
+package cl.prezdev.service.impl;
 
 import cl.prezdev.device.AvlManager;
 import cl.prezdev.model.Avl;
@@ -11,6 +11,8 @@ import cl.prezdev.model.response.RemoveAllAvlsResponse;
 import cl.prezdev.model.response.StartAllResponse;
 import cl.prezdev.model.response.StatResponse;
 import cl.prezdev.model.response.StopAllResponse;
+import cl.prezdev.service.AvlService;
+import cl.prezdev.service.ImeiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
