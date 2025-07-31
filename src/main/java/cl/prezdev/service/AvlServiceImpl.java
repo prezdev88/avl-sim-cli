@@ -1,76 +1,88 @@
 package cl.prezdev.service;
 
-import cl.prezdev.device.DeviceManager;
+import cl.prezdev.device.AvlManager;
 import cl.prezdev.model.Avl;
 import cl.prezdev.model.Queclink;
 import cl.prezdev.model.Teltonika;
+import cl.prezdev.model.dto.AvlDto;
+import cl.prezdev.model.response.AddAvlResponse;
+import cl.prezdev.model.response.ListAvlsResponse;
+import cl.prezdev.model.response.RemoveAllAvlsResponse;
+import cl.prezdev.model.response.StartAllResponse;
+import cl.prezdev.model.response.StatResponse;
+import cl.prezdev.model.response.StopAllResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AvlServiceImpl implements AvlService {
 
     private final ImeiService imeiService;
-    private final DeviceManager deviceManager;
+    private final AvlManager avlManager;
     private final AtomicInteger nextId = new AtomicInteger(1);
 
     @Value("${avl.simulation.send-interval-ms:5000}")
     private long sendIntervalMs;
 
     @Override
-    public String addDevices(String type, int count) {
+    public AddAvlResponse addAvls(String type, int count) {
         for (int i = 0; i < count; i++) {
             int id = nextId.getAndIncrement();
             Avl avl = gen(type);
-            deviceManager.add(id, avl);
+            avlManager.add(id, avl);
         }
-        return "[OK] Added " + count + " devices of type " + type.toUpperCase();
+        
+        return new AddAvlResponse(count, type.toUpperCase());
     }
 
     @Override
-    public String listDevices() {
-        if (deviceManager.count() == 0) {
-            return "[INFO] No simulated devices.";
+    public ListAvlsResponse listAvls() {
+        if (avlManager.count() == 0) {
+            return new ListAvlsResponse(Collections.emptyList());
         }
 
-        return deviceManager.all().entrySet().stream()
-                .map(entry -> "[ID " + entry.getKey() + "] Type: " + entry.getValue())
-                .collect(Collectors.joining("\n"));
+        return new ListAvlsResponse(map(avlManager.all()));
     }
 
     @Override
-    public String getStats() {
-        return "[INFO] Active devices: " + deviceManager.count();
+    public StatResponse getStats() {
+        return new StatResponse(avlManager.count());
     }
 
     @Override
-    public String removeAllDevices() {
-        int count = deviceManager.count();
-        deviceManager.clear();
-        return "[INFO] Removed " + count + " devices";
+    public RemoveAllAvlsResponse removeAllAvls() {
+        int count = avlManager.count();
+        avlManager.clear();
+        return new RemoveAllAvlsResponse(count);
     }
 
     @Override
-    public String startAll() {
-        if (deviceManager.count() == 0) {
-            return "[WARN] No devices to start.";
+    public StartAllResponse startAll() {
+        if (avlManager.count() == 0) {
+            return new StartAllResponse("No avls to start.");
         }
-        deviceManager.startAll();
-        return "[OK] All devices started.";
+
+        avlManager.startAll();
+
+        return new StartAllResponse("[OK] All avls started.");
     }
 
     @Override
-    public String stopAll() {
-        if (deviceManager.count() == 0) {
-            return "[WARN] No devices to stop.";
+    public StopAllResponse stopAll() {
+        if (avlManager.count() == 0) {
+            return new StopAllResponse("No avls to stop.");
         }
-        deviceManager.stopAll();
-        return "[OK] All devices stopped.";
+        
+        avlManager.stopAll();
+
+        return new StopAllResponse("All avls stopped.");
     }
 
     private Avl gen(String type) {
@@ -82,5 +94,15 @@ public class AvlServiceImpl implements AvlService {
             case "QUECLINK"  -> new Queclink(imei, sendIntervalMs);
             default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
         };
+    }
+
+    private List<AvlDto> map(Map<Integer, Avl> avls) {
+        return avls.entrySet().stream()
+            .map(entry -> {
+                Integer id = entry.getKey();
+                Avl avl = entry.getValue();
+                return new AvlDto(id, avl.getImei(), avl.getProvider(), avl.isStarted());
+            })
+            .toList();
     }
 }

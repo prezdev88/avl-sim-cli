@@ -1,15 +1,22 @@
 package cl.prezdev.service;
 
-public interface AvlService {
-    String addDevices(String type, int count);
+import cl.prezdev.model.response.AddAvlResponse;
+import cl.prezdev.model.response.ListAvlsResponse;
+import cl.prezdev.model.response.RemoveAllAvlsResponse;
+import cl.prezdev.model.response.StartAllResponse;
+import cl.prezdev.model.response.StatResponse;
+import cl.prezdev.model.response.StopAllResponse;
 
-    String listDevices();
+public interface AvlService {
+    AddAvlResponse addAvls(String type, int count);
+
+    ListAvlsResponse listAvls();
     
-    String getStats();
+    StatResponse getStats();
     
-    String removeAllDevices();
+    RemoveAllAvlsResponse removeAllAvls();
     
-    String startAll();
+    StartAllResponse startAll();
     
-    String stopAll();
+    StopAllResponse stopAll();
 }

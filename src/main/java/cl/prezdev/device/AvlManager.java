@@ -9,33 +9,33 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class DeviceManager {
+public class AvlManager {
     
-    private Map<Integer, Avl> devices;
+    private Map<Integer, Avl> avls;
 
     @PostConstruct
     public void init() {
-        this.devices = new ConcurrentHashMap<>();
+        this.avls = new ConcurrentHashMap<>();
     }
 
     public void add(int id, Avl avl) {
-        devices.put(id, avl);
+        avls.put(id, avl);
     }
 
     public int count() {
-        return devices.size();
+        return avls.size();
     }
 
     public Map<Integer, Avl> all() {
-        return devices;
+        return avls;
     }
 
     public void clear() {
-        devices.clear();
+        avls.clear();
     }
 
     public void startAll() {
-        for (Map.Entry<Integer, Avl> entry : devices.entrySet()) {
+        for (Map.Entry<Integer, Avl> entry : avls.entrySet()) {
             Avl avl = entry.getValue();
             
             if (avl.isAlive()) {
@@ -47,7 +47,7 @@ public class DeviceManager {
     }
 
     public void stopAll() {
-        for (Avl avl : devices.values()) {
+        for (Avl avl : avls.values()) {
             avl.interrupt();
         }
     }

@@ -2,11 +2,11 @@ package cl.prezdev.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
 @Setter
-@ToString
 public abstract class Avl extends Thread {
 
     private long pauseMs;
@@ -38,6 +38,6 @@ public abstract class Avl extends Thread {
     protected abstract String generateFrame();
 
     protected void sendFrame(String frame) {
-        System.out.printf("[%s] IMEI=%s sent frame: %s%n", provider, imei, frame);
+        log.info("[{}] IMEI={} sent frame: {}", provider, imei, frame);
     }
 }

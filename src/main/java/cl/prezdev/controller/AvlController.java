@@ -1,5 +1,11 @@
 package cl.prezdev.controller;
 
+import cl.prezdev.model.response.AddAvlResponse;
+import cl.prezdev.model.response.ListAvlsResponse;
+import cl.prezdev.model.response.RemoveAllAvlsResponse;
+import cl.prezdev.model.response.StartAllResponse;
+import cl.prezdev.model.response.StatResponse;
+import cl.prezdev.model.response.StopAllResponse;
 import cl.prezdev.service.AvlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,33 +19,32 @@ public class AvlController {
     private final AvlService avlService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addDevices(@RequestParam String type, @RequestParam int count) {
-        return ResponseEntity.ok(avlService.addDevices(type, count));
+    public ResponseEntity<AddAvlResponse> addAvls(@RequestParam String type, @RequestParam int count) {
+        return ResponseEntity.ok(avlService.addAvls(type, count));
     }
 
     @GetMapping("/list")
-    public ResponseEntity<String> listDevices() {
-        return ResponseEntity.ok(avlService.listDevices());
+    public ResponseEntity<ListAvlsResponse> listAvls() {
+        return ResponseEntity.ok(avlService.listAvls());
     }
 
     @GetMapping("/stat")
-    public ResponseEntity<String> getStats() {
+    public ResponseEntity<StatResponse> getStats() {
         return ResponseEntity.ok(avlService.getStats());
     }
 
     @DeleteMapping("/remove-all")
-    public ResponseEntity<String> removeAll() {
-        return ResponseEntity.ok(avlService.removeAllDevices());
+    public ResponseEntity<RemoveAllAvlsResponse> removeAll() {
+        return ResponseEntity.ok(avlService.removeAllAvls());
     }
 
     @PostMapping("/start")
-    public ResponseEntity<String> startAll() {
+    public ResponseEntity<StartAllResponse> startAll() {
         return ResponseEntity.ok(avlService.startAll());
     }
 
     @PostMapping("/stop")
-    public ResponseEntity<String> stopAll() {
+    public ResponseEntity<StopAllResponse> stopAll() {
         return ResponseEntity.ok(avlService.stopAll());
     }
 }
-
