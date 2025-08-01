@@ -50,13 +50,31 @@ public class AvlServiceImpl implements AvlService {
     }
 
     @Override
-    public ListAvlsResponse listAvls() {
-        log.info("[LIST] Listing all AVL devices");
+    public ListAvlsResponse listAvls(int page, int size) {
+        log.info("[LIST] Listing AVL devices - page={}, size={}", page, size);
+        
         if (avlManager.count() == 0) {
             log.warn("[LIST] No simulated devices found");
-            return new ListAvlsResponse(Collections.emptyList());
+            return new ListAvlsResponse(Collections.emptyList(), page, size, 0, 0, true, true);
         }
-        return new ListAvlsResponse(map(avlManager.all()));
+
+        List<AvlDto> allAvls = map(avlManager.all());
+        long totalElements = allAvls.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, allAvls.size());
+        
+        List<AvlDto> pagedAvls = (startIndex >= allAvls.size()) 
+            ? Collections.emptyList() 
+            : allAvls.subList(startIndex, endIndex);
+            
+        boolean isFirst = page == 0;
+        boolean isLast = page >= totalPages - 1;
+        
+        log.debug("[LIST] Returning {} devices for page {} of {}", pagedAvls.size(), page + 1, totalPages);
+        
+        return new ListAvlsResponse(pagedAvls, page, size, totalElements, totalPages, isFirst, isLast);
     }
 
     @Override

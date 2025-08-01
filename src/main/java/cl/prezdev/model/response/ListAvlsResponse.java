@@ -12,4 +12,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ListAvlsResponse {
     private List<AvlDto> avls;
+    private int page;
+    private int size;
+    private long totalElements;
+    private int totalPages;
+    private boolean first;
+    private boolean last;
 }

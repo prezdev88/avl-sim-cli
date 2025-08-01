@@ -24,8 +24,10 @@ public class AvlController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<ListAvlsResponse> listAvls() {
-        return ResponseEntity.ok(avlService.listAvls());
+    public ResponseEntity<ListAvlsResponse> listAvls(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(avlService.listAvls(page, size));
     }
 
     @GetMapping("/stat")

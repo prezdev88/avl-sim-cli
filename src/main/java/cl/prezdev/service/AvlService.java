@@ -10,7 +10,7 @@ import cl.prezdev.model.response.StopAllResponse;
 public interface AvlService {
     AddAvlResponse addAvls(String type, int count);
 
-    ListAvlsResponse listAvls();
+    ListAvlsResponse listAvls(int page, int size);
     
     StatResponse getStats();
     
