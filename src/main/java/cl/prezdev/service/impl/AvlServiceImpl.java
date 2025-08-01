@@ -13,6 +13,7 @@ import cl.prezdev.model.response.StatResponse;
 import cl.prezdev.model.response.StopAllResponse;
 import cl.prezdev.service.AvlService;
 import cl.prezdev.service.ImeiService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,12 +27,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class AvlServiceImpl implements AvlService {
 
-    private final ImeiService imeiService;
     private final AvlManager avlManager;
-    private final AtomicInteger nextId = new AtomicInteger(1);
+    private final ImeiService imeiService;
+
+    private AtomicInteger nextId;
 
     @Value("${avl.simulation.send-interval-ms:5000}")
     private long sendIntervalMs;
+
+    @PostConstruct
+    public void init() {
+        nextId = new AtomicInteger(1);
+    }
 
     @Override
     public AddAvlResponse addAvls(String type, int count) {
