@@ -5,16 +5,12 @@ import cl.prezdev.model.Avl;
 import cl.prezdev.model.Queclink;
 import cl.prezdev.model.Teltonika;
 import cl.prezdev.model.dto.AvlDto;
-import cl.prezdev.model.response.AddAvlResponse;
-import cl.prezdev.model.response.ListAvlsResponse;
-import cl.prezdev.model.response.RemoveAllAvlsResponse;
-import cl.prezdev.model.response.StartAllResponse;
-import cl.prezdev.model.response.StatResponse;
-import cl.prezdev.model.response.StopAllResponse;
+import cl.prezdev.model.response.*;
 import cl.prezdev.service.AvlService;
 import cl.prezdev.service.ImeiService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AvlServiceImpl implements AvlService {
 
     private final AvlManager avlManager;
     private final ImeiService imeiService;
-
     private AtomicInteger nextId;
 
     @Value("${avl.simulation.send-interval-ms:5000}")
@@ -38,36 +34,42 @@ public class AvlServiceImpl implements AvlService {
     @PostConstruct
     public void init() {
         nextId = new AtomicInteger(1);
+        log.info("[INIT] AvlService initialized with sendIntervalMs={}", sendIntervalMs);
     }
 
     @Override
     public AddAvlResponse addAvls(String type, int count) {
+        log.info("[ADD] Adding {} devices of type {}", count, type);
         for (int i = 0; i < count; i++) {
             int id = nextId.getAndIncrement();
             Avl avl = gen(type);
             avlManager.add(id, avl);
+            log.debug("[ADD] Added device ID={} IMEI={} Type={}", id, avl.getImei(), avl.getProvider());
         }
-        
         return new AddAvlResponse(count, type.toUpperCase());
     }
 
     @Override
     public ListAvlsResponse listAvls() {
+        log.info("[LIST] Listing all AVL devices");
         if (avlManager.count() == 0) {
+            log.warn("[LIST] No simulated devices found");
             return new ListAvlsResponse(Collections.emptyList());
         }
-
         return new ListAvlsResponse(map(avlManager.all()));
     }
 
     @Override
     public StatResponse getStats() {
-        return new StatResponse(avlManager.count());
+        int count = avlManager.count();
+        log.info("[STATS] Active device count: {}", count);
+        return new StatResponse(count);
     }
 
     @Override
     public RemoveAllAvlsResponse removeAllAvls() {
         int count = avlManager.count();
+        log.info("[REMOVE] Removing all devices, count={}", count);
         avlManager.clear();
         return new RemoveAllAvlsResponse(count);
     }
@@ -75,28 +77,31 @@ public class AvlServiceImpl implements AvlService {
     @Override
     public StartAllResponse startAll() {
         if (avlManager.count() == 0) {
+            log.warn("[START] No devices to start");
             return new StartAllResponse("No avls to start.");
         }
 
+        log.info("[START] Starting all devices");
         avlManager.startAll();
-
         return new StartAllResponse("[OK] All avls started.");
     }
 
     @Override
     public StopAllResponse stopAll() {
         if (avlManager.count() == 0) {
+            log.warn("[STOP] No devices to stop");
             return new StopAllResponse("No avls to stop.");
         }
-        
-        avlManager.stopAll();
 
+        log.info("[STOP] Stopping all devices");
+        avlManager.stopAll();
         return new StopAllResponse("All avls stopped.");
     }
 
     private Avl gen(String type) {
         String provider = type.toUpperCase();
         String imei = imeiService.generateImei();
+        log.debug("[GEN] Generating device of type={} with IMEI={}", provider, imei);
 
         return switch (provider) {
             case "TELTONIKA" -> new Teltonika(imei, sendIntervalMs);
@@ -106,12 +111,13 @@ public class AvlServiceImpl implements AvlService {
     }
 
     private List<AvlDto> map(Map<Integer, Avl> avls) {
+        log.debug("[MAP] Mapping {} devices to DTOs", avls.size());
         return avls.entrySet().stream()
-            .map(entry -> {
-                Integer id = entry.getKey();
-                Avl avl = entry.getValue();
-                return new AvlDto(id, avl.getImei(), avl.getProvider(), avl.isStarted());
-            })
+            .map(entry -> new AvlDto(
+                entry.getKey(),
+                entry.getValue().getImei(),
+                entry.getValue().getProvider(),
+                entry.getValue().isStarted()))
             .toList();
     }
 }
